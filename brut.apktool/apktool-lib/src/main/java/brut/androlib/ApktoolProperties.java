@@ -1,5 +1,6 @@
 /**
- *  Copyright 2014 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,11 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package brut.androlib;
-
-import org.jf.baksmali.baksmali;
-import org.jf.smali.main;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +48,7 @@ public class ApktoolProperties {
 
         InputStream templateStream = null;
         try {
-            templateStream = baksmali.class.getClassLoader().getResourceAsStream("baksmali.properties");
+            templateStream = org.jf.baksmali.Main.class.getClassLoader().getResourceAsStream("baksmali.properties");
         } catch(NoClassDefFoundError ex) {
             LOGGER.warning("Can't load baksmali properties.");
         }
@@ -69,7 +66,7 @@ public class ApktoolProperties {
 
         templateStream = null;
         try {
-            templateStream = main.class.getClassLoader().getResourceAsStream("smali.properties");
+            templateStream = org.jf.smali.Main.class.getClassLoader().getResourceAsStream("smali.properties");
         } catch(NoClassDefFoundError ex) {
             LOGGER.warning("Can't load smali properties.");
         }

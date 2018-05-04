@@ -2,7 +2,21 @@
 
 The steps taken for slicing an official release of Apktool.
 
-### Taging the release.
+### Ensuring proper license headers
+
+Before we build a release, its a good practice to ensure all headers in source files contain
+proper licenses.
+
+    ./gradlew licenseMain && ./gradlew licenseTest
+
+If any license violations were found you can automatically fix them with either
+
+    ./gradlew licenseFormatMain
+    ./gradlew licenseFormatTest
+
+Like described, one formats the `src/main` directory, while the other formats the `src/test` directory.
+
+### Tagging the release.
 
 Inside `build.gradle` there are two lines.
 
@@ -33,11 +47,11 @@ For example for the `2.2.1` release.
 In order to maintain a clean slate. Run `gradlew clean` to start from a clean slate. Now lets build
 the new version. We should not have any new commits since the tagged commit.
 
-    ./gradlew build fatJar proguard release
+    ./gradlew build shadowJar proguard release
 
 The build should tell you what version you are building and it should match the commits you made previously.
 
-    ➜ Apktool git:(master) ./gradlew build fatJar proguard release
+    ➜ Apktool git:(master) ./gradlew build shadowJar proguard release
     Building RELEASE (master): 2.2.2
 
 ### Testing the binary.
@@ -51,15 +65,19 @@ Copy the jar to any location to prep for uploading. The pattern we name the jars
 
 Or in the case of the last release - `apktool_2.2.1.jar`
 
-Once you have the jar in this form. Record the md5 hash of it. This can be done using `md5sum`.
+Once you have the jar in this form. Record the md5 hash & sha256 hash of it. This can be done using `md5sum`
+and `sha256sum` on unix systems.
 
 This can be shown for the `2.2.2` release like so
 
     ➜  Desktop md5sum apktool_2.2.2.jar
     1e6be08d3f9bb4b442bb85cf4e21f1c1  apktool_2.2.2.jar
 
-Remember this hash. This is the local hash. This is our master hash. All others (Bitbucket, Backup)
-must match this.
+    ➜  Desktop sha256sum apktool-2.2.2.jar
+    1f1f186edcc09b8677bc1037f3f812dff89077187b24c8558ca2a89186ea3251  apktool-2.2.2.jar
+
+Remember these hashes. These are the local hashes. These are our master hashes. All others (Bitbucket, Backup)
+must match these. If they do not - they are invalid.
 
 ### Lets get uploading.
 
@@ -100,15 +118,19 @@ Access to this server is probably limited so this option may not be possible. SS
 `connortumbleson.com` server with username `connor`. Head to `public_html/apktool` and upload
 the `apktool_x.x.x.jar` to it.
 
-Now re-generate the md5 hashes for these files.
+Now re-generate the md5/sha256 hashes for these files.
 
     md5sum *.jar > md5.md5sum
+    sha256 *.jar > sha256.shasum
 
 Check the `md5.md5sum` file for the hashes. The file will look something like this.
 
     6de3e097943c553da5db2e604bced332  apktool_1.4.10.jar
     ...
     1e6be08d3f9bb4b442bb85cf4e21f1c1  apktool_2.2.2.jar
+
+Additionally check the `sha256.shasum` file for the hashes. This file will look almost identical to the above
+except for containing sha256 hashes.
 
 The hashes match so we have uploaded the binaries to all 3 locations. Time to get writing the release
 post.
@@ -129,7 +151,7 @@ So write the post. I tend to always include the following:
 2. Quick sentence or two for SEO to describe the meat of this release.
 3. Commit count and total for this release with author names.
 4. Changelog linking to the bugs that were fixed.
-5. Download including the md5 hash.
+5. Download including the md5/sha256 hash.
 6. Link dump to Project Site, GitHub, Bug Tracker and XDA Thread.
 
 Now that you've written this post. We need to go post it in places and update places where
@@ -200,25 +222,19 @@ to get the source downloaded. This is no small download, expect to use 40-60GB.
 After that, you need to build AOSP via this [documentation](https://source.android.com/source/building.html) guide. Now
 we aren't building the entire AOSP package, the initial build is to just see if you are capable of building it.
 
-We check out a certain tag. Currently we use `android-7.1.1_r4`.
+We check out a certain tag. Currently we use `android-8.1.0_r23`.
 
 ### Including our modified `frameworks/base` package.
 
 There is probably a more automated way to do this, but for now just remove all the files in `frameworks/base`. Now
 you can clone the modified repo from first step into this directory.
 
-### Building the aapt binary.
+### Building the aapt1 (Legacy) binary.
 
 The steps below are different per flavor and operating system. For cross compiling the Windows binary on Unix,
 we lose the ability to quickly build just the aapt binary. So the Windows procedure builds the entire Sdk.
 
-#### Unix 32
-1. `source build/envsetup.sh`
-2. `lunch sdk-eng`
-3. `make OUT_DIR=out-x32 LOCAL_MULTILIB=32 USE_NINJA=false aapt`
-4. `strip out-x32/host/linux-x86/bin/aapt`
-
-#### Unix 64
+#### Unix
 1. `source build/envsetup.sh`
 2. `lunch sdk-eng`
 3. `make OUT_DIR=out-x64 LOCAL_MULTILIB=64 USE_NINJA=false aapt`
@@ -230,12 +246,57 @@ we lose the ability to quickly build just the aapt binary. So the Windows proced
 3. `make PRODUCT-sdk-win_sdk USE_NINJA=false`
 4. `strip out/host/windows-x86/bin/aapt.exe`
 
-#### Mac 32
-1. `source build/envsetup.sh`
-2. `lunch sdk-eng`
-3. `make OUT_DIR=out-x32 LOCAL_MULTILIB=32 USE_NINJA=false aapt`
-
-#### Mac 64
+#### Mac
 1. `source build/envsetup.sh`
 2. `lunch sdk-eng`
 3. `make OUT_DIR=out-x64 LOCAL_MULTILIB=64 USE_NINJA=false aapt`
+
+As of Android Oreo (API 26) all aapt binaries are 64 bit (With exception of Windows). 
+
+### Building the aapt2 binary.
+
+The steps below are different per flavor and operating system. For cross compiling the Windows binary on Unix,
+we lose the ability to quickly build just the aapt2 binary. So the Windows procedure builds the entire Sdk.
+
+#### Unix
+1. `make OUT_DIR=out-x64 LOCAL_MULTILIB=64 USE_NINJA=false aapt2`
+2. `strip out-x64/host/linux-x86/bin/aapt2`
+
+#### Windows
+1. `make PRODUCT-sdk-win_sdk USE_NINJA=false`
+2. `strip out/host/windows-x86/bin/aapt2.exe`
+
+#### Mac
+1. `export ANDROID_JAVA_HOME=/Path/To/Jdk`
+2. `source build/envsetup.sh`
+3. `make OUT_DIR=out-x64 LOCAL_MULTILIB=64 USE_NINJA=false aapt2`
+4. `strip out-x64/host/darwin-x86/bin/aapt2`
+
+#### Confirming aapt/aapt2 builds are static
+
+There are some issues with some dependencies (namely `libc++`) in which they are built in the shared state. This is
+alright in the scope and context of AOSP/Android Studio, but once you leave those two behind and start using aapt on
+its own, you encounter some issues. The key is to force `libc++` to be built statically which takes some tweaks with the
+AOSP build systems as that dependency isn't standard like `libz` and others.
+
+You can test the finalized project using tools like `ldd` (unix) and `otool -L` (mac) for testing the binaries looking
+for shared dependencies.
+
+# Gradle Tips n Tricks
+
+    ./gradlew build shadowJar proguard -x test
+
+This skips the testing suite (which currently takes 2-4 minutes). Use this when making quick builds and save the testing
+suite before pushing to GitHub.
+
+    ./gradlew build shadowJar proguard -Dtest.debug
+
+This enables debugging on the test suite. This starts the debugger on port 5005 which you can connect with IntelliJ.
+
+    ./gradlew :brut.apktool:apktool-lib:test ---tests "*BuildAndDecodeTest"
+
+This runs the library project of Apktool, selecting a specific test to run. Comes in handy when writing a new test and
+only wanting to run that one. The asterisk is used to the full path to the test can be ignored. You can additionally
+match this with the debugging parameter to debug a specific test. This command can be found below.
+
+    ./gradlew :brut.apktool:apktool-lib:test --tests "*BuildAndDecodeTest" -Dtest.debug

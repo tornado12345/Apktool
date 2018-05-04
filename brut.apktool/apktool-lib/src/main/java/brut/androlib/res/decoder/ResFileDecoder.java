@@ -1,5 +1,6 @@
 /**
- *  Copyright 2014 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,7 +14,6 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package brut.androlib.res.decoder;
 
 import brut.androlib.AndrolibException;
@@ -62,6 +62,10 @@ public class ResFileDecoder {
                 decode(inDir, inFileName, outDir, outFileName, "raw");
                 return;
             }
+            if (typeName.equals("font") && !".xml".equals(ext)) {
+                decode(inDir, inFileName, outDir, outFileName, "raw");
+                return;
+            }
             if (typeName.equals("drawable") || typeName.equals("mipmap")) {
                 if (inFileName.toLowerCase().endsWith(".9" + ext)) {
                     outFileName = outResName + ".9" + ext;
@@ -71,10 +75,12 @@ public class ResFileDecoder {
                         outFileName = outResName + ".r.9" + ext;
                     }
 
-                    // check for samsung qmg & spi
-                    if (inFileName.toLowerCase().endsWith(".qmg") || inFileName.toLowerCase().endsWith(".spi")) {
-                        copyRaw(inDir, outDir, outFileName);
-                        return;
+                    // check for raw 9patch images
+                    for (String extension : RAW_9PATCH_IMAGE_EXTENSIONS) {
+                        if (inFileName.toLowerCase().endsWith("." + extension)) {
+                            copyRaw(inDir, outDir, outFileName);
+                            return;
+                        }
                     }
 
                     // check for xml 9 patches which are just xml files
@@ -96,6 +102,15 @@ public class ResFileDecoder {
                         outFileName = outResName + ext;
                     }
                 }
+
+                // check for raw image
+                for (String extension : RAW_IMAGE_EXTENSIONS) {
+                    if (inFileName.toLowerCase().endsWith("." + extension)) {
+                        copyRaw(inDir, outDir, outFileName);
+                        return;
+                    }
+                }
+
                 if (!".xml".equals(ext)) {
                     decode(inDir, inFileName, outDir, outFileName, "raw");
                     return;
@@ -144,4 +159,13 @@ public class ResFileDecoder {
     }
 
     private final static Logger LOGGER = Logger.getLogger(ResFileDecoder.class.getName());
+
+    private final static String[] RAW_IMAGE_EXTENSIONS = new String[] {
+        "m4a", // apple
+    };
+
+    private final static String[] RAW_9PATCH_IMAGE_EXTENSIONS = new String[] {
+        "qmg", // samsung
+        "spi", // samsung
+    };
 }
