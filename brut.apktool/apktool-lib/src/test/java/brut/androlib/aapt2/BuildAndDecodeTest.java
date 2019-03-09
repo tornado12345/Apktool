@@ -1,6 +1,6 @@
 /**
- *  Copyright (C) 2017 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2017 Connor Tumbleson <connor.tumbleson@gmail.com>
+ *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package brut.androlib.aapt2;
 
 import brut.androlib.*;
+import brut.androlib.meta.MetaInfo;
 import brut.common.BrutException;
 import brut.directory.ExtFile;
 import brut.util.OS;
@@ -73,7 +74,33 @@ public class BuildAndDecodeTest extends BaseTest {
     }
 
     @Test
+    public void confirmZeroByteFileIsNotStored() throws BrutException {
+        MetaInfo metaInfo = new Androlib().readMetaFile(sTestNewDir);
+        assertNull(metaInfo.doNotCompress);
+    }
+
+    @Test
+    public void navigationResourceTest() throws BrutException {
+        compareXmlFiles("res/navigation/nav_graph.xml");
+    }
+
+    @Test
+    public void xmlIdsEmptyTest() throws BrutException {
+        compareXmlFiles("res/values/ids.xml");
+    }
+
+    @Test
+    public void leadingDollarSignResourceNameTest() throws BrutException {
+        compareXmlFiles("res/drawable/$avd_hide_password__0.xml");
+    }
+
+    @Test
     public void confirmManifestStructureTest() throws BrutException {
         compareXmlFiles("AndroidManifest.xml");
+    }
+
+    @Test
+    public void xmlXsdFileTest() throws BrutException {
+        compareXmlFiles("res/xml/ww_box_styles_schema.xsd");
     }
 }

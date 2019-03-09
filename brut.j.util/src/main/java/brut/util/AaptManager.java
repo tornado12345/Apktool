@@ -1,6 +1,6 @@
 /**
- *  Copyright (C) 2017 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2017 Connor Tumbleson <connor.tumbleson@gmail.com>
+ *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,17 +35,20 @@ public class AaptManager {
         File aaptBinary;
         String aaptVersion = getAaptBinaryName(version);
 
-        if (! OSDetection.is64Bit() && ! OSDetection.isWindows()) {
+        if (! OSDetection.is64Bit() && OSDetection.isMacOSX()) {
             throw new BrutException("32 bit OS detected. No 32 bit binaries available.");
         }
 
+        // Set the 64 bit flag
+        aaptVersion += OSDetection.is64Bit() ? "_64" : "";
+
         try {
             if (OSDetection.isMacOSX()) {
-                aaptBinary = Jar.getResourceAsFile("/prebuilt/" + aaptVersion + "/macosx/" + aaptVersion, AaptManager.class);
+                aaptBinary = Jar.getResourceAsFile("/prebuilt/macosx/" + aaptVersion, AaptManager.class);
             } else if (OSDetection.isUnix()) {
-                aaptBinary = Jar.getResourceAsFile("/prebuilt/" + aaptVersion + "/linux/" + aaptVersion, AaptManager.class);
+                aaptBinary = Jar.getResourceAsFile("/prebuilt/linux/" + aaptVersion, AaptManager.class);
             } else if (OSDetection.isWindows()) {
-                aaptBinary = Jar.getResourceAsFile("/prebuilt/" + aaptVersion + "/windows/" + aaptVersion + ".exe", AaptManager.class);
+                aaptBinary = Jar.getResourceAsFile("/prebuilt/windows/" + aaptVersion + ".exe", AaptManager.class);
             } else {
                 throw new BrutException("Could not identify platform: " + OSDetection.returnOS());
             }

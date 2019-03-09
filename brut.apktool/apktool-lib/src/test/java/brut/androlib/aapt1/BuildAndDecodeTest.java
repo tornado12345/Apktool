@@ -20,6 +20,7 @@ import brut.androlib.Androlib;
 import brut.androlib.ApkDecoder;
 import brut.androlib.BaseTest;
 import brut.androlib.TestUtils;
+import brut.androlib.meta.MetaInfo;
 import brut.directory.ExtFile;
 import brut.common.BrutException;
 import brut.util.OS;
@@ -198,6 +199,16 @@ public class BuildAndDecodeTest extends BaseTest {
     }
 
     @Test
+    public void xmlXsdFileTest() throws BrutException {
+        compareXmlFiles("res/xml/ww_box_styles_schema.xsd");
+    }
+
+    @Test
+    public void xmlIdsEmptyTest() throws BrutException {
+        compareXmlFiles("res/values/ids.xml");
+    }
+
+    @Test
     public void xmlReferenceAttributeTest() throws BrutException {
         compareXmlFiles("res/layout/issue1040.xml");
     }
@@ -230,7 +241,7 @@ public class BuildAndDecodeTest extends BaseTest {
     @Test
     public void qualifiersTest() throws BrutException {
         compareValuesFiles("values-mcc004-mnc4-en-rUS-ldrtl-sw100dp-w200dp-h300dp"
-                + "-xlarge-long-round-highdr-land-desk-night-xhdpi-finger-keyssoft-12key"
+                + "-long-round-highdr-land-desk-night-xhdpi-finger-keyssoft-12key"
                 + "-navhidden-dpad-v26/strings.xml");
     }
 
@@ -478,6 +489,15 @@ public class BuildAndDecodeTest extends BaseTest {
                             controlImage.getRGB(0, i), testImage.getRGB(0, i));
                 }
             }
+        }
+    }
+
+    @Test
+    public void confirmZeroByteFileIsNotStored() throws BrutException {
+        MetaInfo metaInfo = new Androlib().readMetaFile(sTestNewDir);
+
+        for (String item : metaInfo.doNotCompress) {
+            assertNotSame(item, "empty");
         }
     }
 

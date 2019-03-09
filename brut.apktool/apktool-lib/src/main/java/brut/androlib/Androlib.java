@@ -168,7 +168,9 @@ public class Androlib {
             String ext;
 
             for (String file : files) {
-                if (isAPKFileNames(file) && unk.getCompressionLevel(file) == 0) {
+                if (isAPKFileNames(file) &&
+                    unk.getCompressionLevel(file) == 0 &&
+                    unk.getSize(file) != 0) {
 
                     if (StringUtils.countMatches(file, ".") > 1) {
                         ext = file;
@@ -414,7 +416,7 @@ public class Androlib {
         if (apkOptions.forceBuildAll || isModified(smaliDir, dex)) {
             LOGGER.info("Smaling " + folder + " folder into " + filename + "...");
             dex.delete();
-            SmaliBuilder.build(smaliDir, dex, mMinSdkVersion);
+            SmaliBuilder.build(smaliDir, dex, apkOptions.forceApi > 0 ? apkOptions.forceApi : mMinSdkVersion);
         }
         return true;
     }
