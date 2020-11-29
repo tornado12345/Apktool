@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -85,5 +85,16 @@ public class InvalidSdkBoundingTest extends BaseTest {
 
         androlibResources.setSdkInfo(sdkInfo);
         assertEquals("26", androlibResources.checkTargetSdkVersionBounds());
+    }
+
+    @Test
+    public void checkForSdkDevelopmentInsaneTestValue() {
+        AndrolibResources androlibResources = new AndrolibResources();
+
+        Map<String, String> sdkInfo = new LinkedHashMap<>();
+        sdkInfo.put("targetSdkVersion", "S");
+
+        androlibResources.setSdkInfo(sdkInfo);
+        assertEquals("10000", androlibResources.checkTargetSdkVersionBounds());
     }
 }

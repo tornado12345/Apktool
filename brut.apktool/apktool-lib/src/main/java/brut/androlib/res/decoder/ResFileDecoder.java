@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package brut.androlib.res.decoder;
 
 import brut.androlib.AndrolibException;
-import brut.androlib.err.CantFind9PatchChunk;
+import brut.androlib.err.CantFind9PatchChunkException;
 import brut.androlib.err.RawXmlEncounteredException;
 import brut.androlib.res.data.ResResource;
 import brut.androlib.res.data.value.ResBoolValue;
@@ -79,7 +79,7 @@ public class ResFileDecoder {
                     // check for raw 9patch images
                     for (String extension : RAW_9PATCH_IMAGE_EXTENSIONS) {
                         if (inFileName.toLowerCase().endsWith("." + extension)) {
-                            copyRaw(inDir, outDir, outFileName);
+                            copyRaw(inDir, outDir, inFileName, outFileName);
                             return;
                         }
                     }
@@ -93,7 +93,7 @@ public class ResFileDecoder {
                     try {
                         decode(inDir, inFileName, outDir, outFileName, "9patch");
                         return;
-                    } catch (CantFind9PatchChunk ex) {
+                    } catch (CantFind9PatchChunkException ex) {
                         LOGGER.log(
                                 Level.WARNING,
                                 String.format(
@@ -107,7 +107,7 @@ public class ResFileDecoder {
                 // check for raw image
                 for (String extension : RAW_IMAGE_EXTENSIONS) {
                     if (inFileName.toLowerCase().endsWith("." + extension)) {
-                        copyRaw(inDir, outDir, outFileName);
+                        copyRaw(inDir, outDir, inFileName, outFileName);
                         return;
                     }
                 }
@@ -144,9 +144,10 @@ public class ResFileDecoder {
         }
     }
 
-    public void copyRaw(Directory inDir, Directory outDir, String filename) throws AndrolibException {
+    public void copyRaw(Directory inDir, Directory outDir, String inFilename,
+                        String outFilename) throws AndrolibException {
         try {
-            DirUtil.copyToDir(inDir, outDir, filename);
+            DirUtil.copyToDir(inDir, outDir, inFilename, outFilename);
         } catch (DirectoryException ex) {
             throw new AndrolibException(ex);
         }
@@ -168,6 +169,7 @@ public class ResFileDecoder {
 
     private final static String[] RAW_IMAGE_EXTENSIONS = new String[] {
         "m4a", // apple
+        "qmg", // samsung
     };
 
     private final static String[] RAW_9PATCH_IMAGE_EXTENSIONS = new String[] {

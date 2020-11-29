@@ -1,6 +1,6 @@
-/**
- *  Copyright (C) 2018 Ryszard Wiśniewski <brut.alll@gmail.com>
- *  Copyright (C) 2018 Connor Tumbleson <connor.tumbleson@gmail.com>
+/*
+ *  Copyright (C) 2010 Ryszard Wiśniewski <brut.alll@gmail.com>
+ *  Copyright (C) 2010 Connor Tumbleson <connor.tumbleson@gmail.com>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -74,9 +75,20 @@ public class BuildAndDecodeTest extends BaseTest {
     }
 
     @Test
-    public void confirmZeroByteFileIsNotStored() throws BrutException {
+    public void valuesMaxLengthTest() throws BrutException {
+        compareValuesFiles("values-es/strings.xml");
+    }
+
+    @Test
+    public void confirmZeroByteFileExtensionIsNotStored() throws BrutException {
         MetaInfo metaInfo = new Androlib().readMetaFile(sTestNewDir);
-        assertNull(metaInfo.doNotCompress);
+        assertFalse(metaInfo.doNotCompress.contains("jpg"));
+    }
+
+    @Test
+    public void confirmZeroByteFileIsStored() throws BrutException {
+        MetaInfo metaInfo = new Androlib().readMetaFile(sTestNewDir);
+        assertTrue(metaInfo.doNotCompress.contains("assets/0byte_file.jpg"));
     }
 
     @Test
@@ -92,6 +104,15 @@ public class BuildAndDecodeTest extends BaseTest {
     @Test
     public void leadingDollarSignResourceNameTest() throws BrutException {
         compareXmlFiles("res/drawable/$avd_hide_password__0.xml");
+        compareXmlFiles("res/drawable/$avd_show_password__0.xml");
+        compareXmlFiles("res/drawable/$avd_show_password__1.xml");
+        compareXmlFiles("res/drawable/$avd_show_password__2.xml");
+        compareXmlFiles("res/drawable/avd_show_password.xml");
+    }
+
+    @Test
+    public void samsungQmgFilesHandledTest() throws IOException, BrutException {
+        compareBinaryFolder("drawable-xhdpi", true);
     }
 
     @Test
@@ -102,5 +123,25 @@ public class BuildAndDecodeTest extends BaseTest {
     @Test
     public void xmlXsdFileTest() throws BrutException {
         compareXmlFiles("res/xml/ww_box_styles_schema.xsd");
+    }
+
+    @Test
+    public void multipleDexTest() throws BrutException, IOException {
+        compareBinaryFolder("/smali_classes2", false);
+        compareBinaryFolder("/smali_classes3", false);
+
+        File classes2Dex = new File(sTestOrigDir, "build/apk/classes2.dex");
+        File classes3Dex = new File(sTestOrigDir, "build/apk/classes3.dex");
+
+        assertTrue(classes2Dex.isFile());
+        assertTrue(classes3Dex.isFile());
+    }
+
+    @Test
+    public void singleDexTest() throws BrutException, IOException {
+        compareBinaryFolder("/smali", false);
+
+        File classesDex = new File(sTestOrigDir, "build/apk/classes.dex");
+        assertTrue(classesDex.isFile());
     }
 }
